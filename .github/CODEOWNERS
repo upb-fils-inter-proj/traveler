@@ -1,0 +1,13 @@
+# GitHub requests a review from the matching owners on every pull request.
+# The last matching pattern wins.
+# Owners follow the Owner field of the board issues in each area.
+
+# Default: repository files, documentation and CI configuration
+*                   @Florian6524
+
+/.github/           @Florian6524
+/infra/             @Florian6524
+/mobile/            @LucaSain @Florian6524
+/tourist-backend/   @Florian6524 @LucaSain
+/admin-web/         @theac-04
+/admin-backend/     @theac-04
