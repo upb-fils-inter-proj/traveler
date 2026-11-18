@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { Link, Navigate } from 'react-router'
 import { LOGIN_PATH } from '../paths.ts'
@@ -9,19 +10,20 @@ import { returnToFromUserState } from './returnTo.ts'
  * code for tokens by itself, this page only reacts to the outcome.
  */
 export default function CallbackPage() {
+  const { t } = useTranslation()
   const auth = useAuth()
 
   if (auth.isLoading) {
-    return <LoadingScreen message="Completing sign-in…" />
+    return <LoadingScreen message={t('callback.completing')} />
   }
   if (auth.error) {
     return (
       <main className="screen">
-        <h1>Traveler Admin</h1>
+        <h1>{t('app.name')}</h1>
         <p role="alert" className="error">
-          Sign-in failed.
+          {t('callback.error')}
         </p>
-        <Link to={LOGIN_PATH}>Back to the login screen</Link>
+        <Link to={LOGIN_PATH}>{t('callback.backToLogin')}</Link>
       </main>
     )
   }

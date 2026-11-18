@@ -1,24 +1,25 @@
+import { useTranslation } from 'react-i18next'
 import type { ConfigProblem } from '../config.ts'
+import LanguageSwitcher from '../i18n/LanguageSwitcher.tsx'
 
 export default function ConfigErrorPage({ problems }: { problems: ConfigProblem[] }) {
+  const { t } = useTranslation()
+
   return (
     <main className="screen">
-      <h1>Configuration incomplete</h1>
+      <LanguageSwitcher />
+      <h1>{t('configError.title')}</h1>
       <p role="alert" className="error">
-        The app is not configured correctly. These environment variables are
-        missing or invalid:
+        {t('configError.intro')}
       </p>
       <ul>
         {problems.map((problem) => (
           <li key={problem.variable}>
-            <code>{problem.variable}</code> ({problem.reason})
+            <code>{problem.variable}</code> ({t(`configError.${problem.reason}`)})
           </li>
         ))}
       </ul>
-      <p>
-        Copy <code>.env.example</code> to <code>.env</code>, fill in the values
-        and restart the app.
-      </p>
+      <p>{t('configError.hint')}</p>
     </main>
   )
 }

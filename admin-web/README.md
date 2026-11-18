@@ -58,6 +58,17 @@ a side menu links to three sections that are empty for now:
 The sections are listed in `src/sections.ts`, which drives both the menu and the
 routes.
 
+## Languages
+
+The app is available in Romanian and English (`i18next` with `react-i18next`).
+A language switcher is on every screen. The choice is saved in `localStorage`
+under `traveler-admin.language`. Without a saved choice the app uses the browser
+language when it is Romanian or English, and English otherwise.
+
+The texts live in `src/i18n/locales/ro.json` and `src/i18n/locales/en.json`.
+Every key has to exist in both files, a test checks this. Write Romanian with
+comma-below diacritics (ș, ț), not cedillas.
+
 ## Commands
 
 Run these from `admin-web/`.

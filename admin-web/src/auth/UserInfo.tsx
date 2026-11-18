@@ -1,7 +1,9 @@
+import { useTranslation } from 'react-i18next'
 import { useAuth } from 'react-oidc-context'
 import { displayName } from './displayName.ts'
 
 export default function UserInfo() {
+  const { t } = useTranslation()
   const auth = useAuth()
 
   const signOut = () => {
@@ -12,9 +14,9 @@ export default function UserInfo() {
 
   return (
     <div className="user-info">
-      <span>Signed in as {displayName(auth.user)}</span>
+      <span>{t('user.signedInAs', { name: displayName(auth.user) })}</span>
       <button type="button" onClick={signOut}>
-        Sign out
+        {t('user.signOut')}
       </button>
     </div>
   )

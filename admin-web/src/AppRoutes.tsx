@@ -19,7 +19,7 @@ export default function AppRoutes() {
             <Route
               key={section.path}
               path={section.path}
-              element={<SectionPage title={section.title} />}
+              element={<SectionPage titleKey={section.titleKey} />}
             />
           ))}
         </Route>
