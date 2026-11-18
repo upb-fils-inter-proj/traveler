@@ -51,7 +51,7 @@ services:
 
   # Cache only: everything in it can be rebuilt from the databases.
   redis:
-    image: redis:7.4-alpine
+    image: redis:8.10-alpine
     command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}", "--save", "", "--appendonly", "no"]
     environment:
       REDISCLI_AUTH: ${REDIS_PASSWORD}
