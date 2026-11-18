@@ -1,0 +1,116 @@
+name: Backends
+
+on:
+  pull_request:
+    paths:
+      - "tourist-backend/**"
+      - "admin-backend/**"
+      - "api/**"
+      - ".dockerignore"
+      - ".github/workflows/backends.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "tourist-backend/**"
+      - "admin-backend/**"
+      - "api/**"
+      - ".dockerignore"
+      - ".github/workflows/backends.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backends-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint (${{ matrix.backend }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        backend: [tourist-backend, admin-backend]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: ${{ matrix.backend }}/pom.xml
+      - name: Check formatting
+        working-directory: ${{ matrix.backend }}
+        run: mvn -B -ntp spotless:check
+
+  build-test:
+    name: Build and test (${{ matrix.backend }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        backend: [tourist-backend, admin-backend]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: ${{ matrix.backend }}/pom.xml
+      # Runs the unit tests, the contract tests and the integration tests.
+      # The integration tests start PostgreSQL with PostGIS through Docker,
+      # which the runner provides.
+      - name: Build and test
+        working-directory: ${{ matrix.backend }}
+        run: mvn -B -ntp verify
+      - name: Keep the test reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-reports-${{ matrix.backend }}
+          path: |
+            ${{ matrix.backend }}/target/surefire-reports
+            ${{ matrix.backend }}/target/failsafe-reports
+          if-no-files-found: ignore
+
+  contract:
+    name: Contract tests (${{ matrix.backend }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        backend: [tourist-backend, admin-backend]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: ${{ matrix.backend }}/pom.xml
+      - name: Run the contract tests against api/internal-api.yaml
+        working-directory: ${{ matrix.backend }}
+        run: mvn -B -ntp test -Dgroups=contract
+
+  docker:
+    name: Docker image (${{ matrix.backend }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        backend: [tourist-backend, admin-backend]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - name: Build the image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ${{ matrix.backend }}/Dockerfile
+          push: false
+          tags: traveler/${{ matrix.backend }}:ci
+          cache-from: type=gha,scope=${{ matrix.backend }}
+          cache-to: type=gha,scope=${{ matrix.backend }},mode=max
