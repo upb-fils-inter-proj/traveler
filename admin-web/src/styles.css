@@ -15,3 +15,34 @@
 body {
   margin: 0;
 }
+
+.screen {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 3rem 1rem;
+}
+
+.error {
+  color: #b42318;
+}
+
+button {
+  font: inherit;
+  padding: 0.5rem 1rem;
+  border: 1px solid #1d4ed8;
+  border-radius: 0.375rem;
+  color: #fff;
+  background: #1d4ed8;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #1e40af;
+}
+
+.user-info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
