@@ -8,10 +8,10 @@ coordinates:
   lat: 45.35533
   lon: 25.54937
 image:
-  file: pending
-  licence: pending
-  author: pending
-  source: pending
+  file: images/03-sinaia-monastery.jpg
+  licence: All rights reserved
+  author: Traveler team
+  source: Provided by the Traveler team
 status: researched
 ---
 

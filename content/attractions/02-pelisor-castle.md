@@ -8,10 +8,10 @@ coordinates:
   lat: 45.36060
   lon: 25.53914
 image:
-  file: pending
-  licence: pending
-  author: pending
-  source: pending
+  file: images/02-pelisor-castle.jpg
+  licence: All rights reserved
+  author: Traveler team
+  source: Provided by the Traveler team
 status: researched
 ---
 

@@ -91,5 +91,12 @@ Coordinates are used for the QR check-in within 50 m, so they must be accurate.
 
 ## Images
 
-The owner of the folder adds the photos herself. A photo needs a known licence,
-its author and its source page before the `image` fields are filled in.
+The photos are in [`attractions/images/`](attractions/images), one file per
+attraction, named like its text file (`01-peles-castle.jpg`).
+[`attractions/images/README.md`](attractions/images/README.md) lists the author,
+licence, source and size of every photo.
+
+A photo needs a known licence, its author and its source before its `image`
+fields are filled in, and the table and the front matter must say the same.
+Photos are kept as they were provided, without further compression. Never remove
+a watermark or a logo from a photo.

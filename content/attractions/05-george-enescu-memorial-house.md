@@ -8,10 +8,10 @@ coordinates:
   lat: 45.36635
   lon: 25.54836
 image:
-  file: pending
-  licence: pending
-  author: pending
-  source: pending
+  file: images/05-george-enescu-memorial-house.jpg
+  licence: All rights reserved
+  author: Traveler team
+  source: Provided by the Traveler team
 status: researched
 ---
 
