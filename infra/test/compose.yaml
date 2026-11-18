@@ -124,7 +124,7 @@ services:
       TOURIST_RATE_LIMIT: ${TOURIST_RATE_LIMIT:-10r/s}
     volumes:
       - ./nginx/templates/tourist-gateway.conf.template:/etc/nginx/templates/default.conf.template:ro
-      - ./certs/tourist:/etc/nginx/certs:ro
+      - ${CERTS_DIR:-./certs}/tourist:/etc/nginx/certs:ro
     ports:
       - "${TOURIST_HTTPS_PORT:-443}:443"
     depends_on:
@@ -140,7 +140,7 @@ services:
       ADMIN_RATE_LIMIT: ${ADMIN_RATE_LIMIT:-10r/s}
     volumes:
       - ./nginx/templates/admin-gateway.conf.template:/etc/nginx/templates/default.conf.template:ro
-      - ./certs/admin:/etc/nginx/certs:ro
+      - ${CERTS_DIR:-./certs}/admin:/etc/nginx/certs:ro
     ports:
       - "${ADMIN_HTTPS_PORT:-8443}:443"
     depends_on:
