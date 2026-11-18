@@ -1,0 +1,18 @@
+# Vulnerabilities that the dependency scan (.github/workflows/dependency-scan.yml)
+# is told to skip. Every entry needs a reason and an end date, so that it comes
+# back and is looked at again. Remove an entry as soon as a fix can be applied.
+
+# Spring Framework 6.2 is the line that Spring Boot 3.5 manages. The advisories
+# below list no fix for it: the first fixed version is 7.0.9, which belongs to
+# Spring Boot 4. The backends are JSON APIs without views, so neither feature is
+# used. Moving to Spring Boot 4 is a decision for the team.
+
+[[IgnoredVulns]]
+id = "GHSA-j9f9-w8pj-32f8"
+ignoreUntil = 2026-12-31
+reason = "CVE-2026-47890: Server-Sent Events with view fragments in Spring MVC. The backends use no SSE and no views. No fix for Spring Framework 6.2."
+
+[[IgnoredVulns]]
+id = "GHSA-pc63-qcmh-9cmg"
+ignoreUntil = 2026-12-31
+reason = "CVE-2026-47884: XsltView with a catch-all mapping. The backends use no view technology. No fix for Spring Framework 6.2."
