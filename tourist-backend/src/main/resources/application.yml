@@ -1,12 +1,19 @@
 spring:
   application:
     name: tourist-backend
+  # The database comes from the environment: SPRING_DATASOURCE_URL,
+  # SPRING_DATASOURCE_USERNAME and SPRING_DATASOURCE_PASSWORD.
+  # Flyway runs the migrations in db/migration when the application starts.
 
 server:
   port: 8080
 
 app:
   version: "@project.version@"
+
+traveler:
+  admin-backend:
+    base-url: ${TRAVELER_ADMIN_BACKEND_BASE_URL:http://admin-backend:8080}
 
 management:
   endpoints:

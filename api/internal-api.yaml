@@ -1,0 +1,47 @@
+openapi: 3.0.3
+info:
+  title: Traveler internal API
+  description: >-
+    Calls from the tourist backend to the admin backend. Internal only: it is
+    never exposed to the mobile app or the admin web app. The service clients
+    that will secure it are created in EN-04.
+  version: 0.1.0
+servers:
+  - url: /
+tags:
+  - name: internal
+    description: Calls between the two backends
+paths:
+  /internal/v1/status:
+    get:
+      tags:
+        - internal
+      operationId: getStatus
+      summary: Report whether the admin backend is up
+      responses:
+        "200":
+          description: The admin backend is up
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceStatus"
+              example:
+                service: admin-backend
+                status: UP
+components:
+  schemas:
+    ServiceStatus:
+      type: object
+      additionalProperties: false
+      required:
+        - service
+        - status
+      properties:
+        service:
+          type: string
+          description: Name of the service that answered
+        status:
+          type: string
+          enum:
+            - UP
+            - DOWN

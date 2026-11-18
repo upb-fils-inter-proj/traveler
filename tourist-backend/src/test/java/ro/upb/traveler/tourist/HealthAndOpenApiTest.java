@@ -9,7 +9,13 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+/** Runs without a database: the datasource and Flyway are covered by FlywayMigrationIT. */
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties =
+        "spring.autoconfigure.exclude="
+            + "org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,"
+            + "org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration")
 class HealthAndOpenApiTest {
 
   @Autowired private TestRestTemplate rest;
