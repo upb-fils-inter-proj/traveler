@@ -1,0 +1,61 @@
+name: Dependency scan
+
+# Scans every dependency of the repository for known vulnerabilities with
+# OSV-Scanner. It reads the manifests and lock files itself, so it does not need
+# the GitHub dependency graph. It also runs every Monday, because new
+# vulnerabilities are published without any change to the code.
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  osv-scanner:
+    name: Dependency scan
+    runs-on: ubuntu-latest
+    env:
+      # Update by hand: Dependabot does not read this value.
+      OSV_SCANNER_VERSION: v2.7.1
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install OSV-Scanner
+        run: |
+          gh release download "$OSV_SCANNER_VERSION" --repo google/osv-scanner \
+            --pattern osv-scanner_linux_amd64 --pattern osv-scanner_SHA256SUMS
+          grep ' osv-scanner_linux_amd64$' osv-scanner_SHA256SUMS | sha256sum -c -
+          install -m 0755 osv-scanner_linux_amd64 "$RUNNER_TEMP/osv-scanner"
+
+      # The scanner exits with 1 when it finds anything, whatever the severity.
+      # The build fails only for a high or critical finding (CVSS 7.0 or more)
+      # that osv-scanner.toml does not list. Lower ones are shown but do not fail.
+      - name: Scan
+        run: |
+          status=0
+          "$RUNNER_TEMP/osv-scanner" scan source --recursive \
+            --config osv-scanner.toml --format json --output-file osv-result.json . || status=$?
+          if [ "$status" -gt 1 ]; then
+            echo "OSV-Scanner itself failed with exit code $status." >&2
+            exit "$status"
+          fi
+
+          echo "Known vulnerabilities (CVSS, package, advisories, manifest):"
+          jq -r '.results[] | .source.path as $path | .packages[] | .package as $p | .groups[]
+                 | "\(.max_severity // "?")\t\($p.name)@\($p.version)\t\(.ids | join(","))\t\($path)"' \
+            osv-result.json | sort -rn | column -t -s "$(printf '\t')"
+
+          blocking=$(jq '[.results[].packages[].groups[] | (.max_severity // "0" | tonumber)]
+                         | map(select(. >= 7)) | length' osv-result.json)
+          if [ "$blocking" -gt 0 ]; then
+            echo "$blocking high or critical finding(s). Update the dependency, or add the advisory to osv-scanner.toml with a reason and an end date." >&2
+            exit 1
+          fi
+          echo "No high or critical finding."
