@@ -1,0 +1,38 @@
+version: 2
+
+updates:
+  - package-ecosystem: maven
+    directory: /tourist-backend
+    schedule:
+      interval: weekly
+    # The backends stay on Spring Boot 3 (and the springdoc line that matches it).
+    ignore:
+      - dependency-name: "org.springframework.boot:*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.springdoc:*"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: maven
+    directory: /admin-backend
+    schedule:
+      interval: weekly
+    ignore:
+      - dependency-name: "org.springframework.boot:*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.springdoc:*"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: docker
+    directory: /tourist-backend
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: docker
+    directory: /admin-backend
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
