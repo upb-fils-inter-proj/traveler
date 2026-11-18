@@ -118,7 +118,7 @@ services:
   # One public gateway per backend: HTTPS, rate limiting, load balancing.
   # These are the only services that publish a port.
   tourist-gateway:
-    image: nginx:1.28-alpine
+    image: nginx:1.31-alpine
     environment:
       TOURIST_SERVER_NAME: ${TOURIST_SERVER_NAME:?Set TOURIST_SERVER_NAME in .env}
       TOURIST_RATE_LIMIT: ${TOURIST_RATE_LIMIT:-10r/s}
@@ -134,7 +134,7 @@ services:
     restart: unless-stopped
 
   admin-gateway:
-    image: nginx:1.28-alpine
+    image: nginx:1.31-alpine
     environment:
       ADMIN_SERVER_NAME: ${ADMIN_SERVER_NAME:?Set ADMIN_SERVER_NAME in .env}
       ADMIN_RATE_LIMIT: ${ADMIN_RATE_LIMIT:-10r/s}
