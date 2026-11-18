@@ -9,10 +9,10 @@
 
 [[IgnoredVulns]]
 id = "GHSA-j9f9-w8pj-32f8"
-ignoreUntil = 2026-12-31
+effectiveUntil = 2026-12-31
 reason = "CVE-2026-47890: Server-Sent Events with view fragments in Spring MVC. The backends use no SSE and no views. No fix for Spring Framework 6.2."
 
 [[IgnoredVulns]]
 id = "GHSA-pc63-qcmh-9cmg"
-ignoreUntil = 2026-12-31
+effectiveUntil = 2026-12-31
 reason = "CVE-2026-47884: XsltView with a catch-all mapping. The backends use no view technology. No fix for Spring Framework 6.2."
