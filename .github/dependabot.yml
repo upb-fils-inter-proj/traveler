@@ -26,11 +26,23 @@ updates:
     directory: /tourist-backend
     schedule:
       interval: weekly
+    # The Java version is chosen by hand (21, the LTS the project runs on). Both tags
+    # float across the patch releases of their line, so the only update Dependabot
+    # can propose is a jump to another Java version.
+    ignore:
+      - dependency-name: "maven"
+      - dependency-name: "eclipse-temurin"
 
   - package-ecosystem: docker
     directory: /admin-backend
     schedule:
       interval: weekly
+    # The Java version is chosen by hand (21, the LTS the project runs on). Both tags
+    # float across the patch releases of their line, so the only update Dependabot
+    # can propose is a jump to another Java version.
+    ignore:
+      - dependency-name: "maven"
+      - dependency-name: "eclipse-temurin"
 
   - package-ecosystem: github-actions
     directory: /
@@ -41,3 +53,12 @@ updates:
     directory: /infra/test
     schedule:
       interval: weekly
+    # A new major version of PostgreSQL or Redis needs a migration plan, and Nginx
+    # stays on its stable line (1.28). Those moves are made by hand.
+    ignore:
+      - dependency-name: "postgis/postgis"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "redis"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "nginx"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
