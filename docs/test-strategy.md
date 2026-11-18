@@ -41,7 +41,9 @@ backend:
   `api/internal-api.yaml`;
 - a Docker image build.
 
-Every pull request also gets a dependency review.
+Every pull request also gets a dependency scan with OSV-Scanner. It also runs on
+`main` and every Monday, and fails on a high or critical finding (CVSS 7.0 or
+more) that `osv-scanner.toml` does not list.
 
 Not in the pipeline yet: the k6 scenarios, OWASP ZAP, the mobile UI tests, and
 the uptime monitoring.
