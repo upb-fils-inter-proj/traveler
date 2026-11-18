@@ -44,6 +44,20 @@ Tokens stay in `sessionStorage`, nothing auth-related is written to
 `localStorage`. Silent token renewal is not set up yet: when the session
 expires, the user signs in again. Role checks are not part of this skeleton.
 
+## Sections
+
+After signing in, a header shows the signed-in user with a sign-out button, and
+a side menu links to three sections that are empty for now:
+
+| Section                 | Route                      |
+| ----------------------- | -------------------------- |
+| City Administrator      | `/city-administrator`      |
+| Partner                 | `/partner`                 |
+| Traveler Administration | `/traveler-administration` |
+
+The sections are listed in `src/sections.ts`, which drives both the menu and the
+routes.
+
 ## Commands
 
 Run these from `admin-web/`.
