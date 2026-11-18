@@ -1,0 +1,16 @@
+[Unit]
+Description=Deploy the Traveler test environment from the main branch
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+# The account that owns /opt/traveler. Replace it when installing (see DEPLOY.md).
+User=deploy
+# The folder that holds the docker helper first, when the account is not in the
+# docker group (see DEPLOY.md).
+Environment=PATH=/opt/traveler/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=/opt/traveler/bin/pull-deploy.sh
+# A build and the wait for healthy containers take several minutes.
+TimeoutStartSec=20min
+Nice=10
