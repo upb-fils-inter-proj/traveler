@@ -1,0 +1,41 @@
+{
+  "app": {
+    "name": "Traveler Admin"
+  },
+  "common": {
+    "loading": "Se încarcă…"
+  },
+  "language": {
+    "label": "Limbă"
+  },
+  "login": {
+    "description": "Autentifică-te cu contul tău authentik pentru a continua.",
+    "button": "Autentificare",
+    "error": "Autentificarea a eșuat. Încearcă din nou."
+  },
+  "callback": {
+    "completing": "Se finalizează autentificarea…",
+    "error": "Autentificarea a eșuat.",
+    "backToLogin": "Înapoi la ecranul de autentificare"
+  },
+  "user": {
+    "signedInAs": "Autentificat ca {{name}}",
+    "signOut": "Deconectare"
+  },
+  "configError": {
+    "title": "Configurare incompletă",
+    "intro": "Aplicația nu este configurată corect. Următoarele variabile de mediu lipsesc sau sunt invalide:",
+    "missing": "lipsește",
+    "invalid": "invalidă",
+    "hint": "Copiază .env.example în .env, completează valorile și repornește aplicația."
+  },
+  "menu": {
+    "label": "Navigare principală"
+  },
+  "sections": {
+    "cityAdministrator": "Administrator de oraș",
+    "partner": "Partener",
+    "travelerAdministration": "Administrare turiști",
+    "empty": "Această secțiune este goală deocamdată."
+  }
+}
