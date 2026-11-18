@@ -9,7 +9,7 @@ WORKDIR /workspace/admin-backend
 RUN --mount=type=cache,target=/root/.m2 \
     mvn -B -ntp -Dmaven.test.skip=true -Dspotless.check.skip=true package
 
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:24-jre
 RUN groupadd --system app && useradd --system --gid app --no-create-home app
 WORKDIR /app
 COPY --from=build /workspace/admin-backend/target/admin-backend-*.jar app.jar
