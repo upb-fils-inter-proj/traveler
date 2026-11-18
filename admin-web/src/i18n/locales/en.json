@@ -1,0 +1,41 @@
+{
+  "app": {
+    "name": "Traveler Admin"
+  },
+  "common": {
+    "loading": "Loading…"
+  },
+  "language": {
+    "label": "Language"
+  },
+  "login": {
+    "description": "Sign in with your authentik account to continue.",
+    "button": "Sign in",
+    "error": "Sign-in failed. Try again."
+  },
+  "callback": {
+    "completing": "Completing sign-in…",
+    "error": "Sign-in failed.",
+    "backToLogin": "Back to the login screen"
+  },
+  "user": {
+    "signedInAs": "Signed in as {{name}}",
+    "signOut": "Sign out"
+  },
+  "configError": {
+    "title": "Configuration incomplete",
+    "intro": "The app is not configured correctly. These environment variables are missing or invalid:",
+    "missing": "missing",
+    "invalid": "invalid",
+    "hint": "Copy .env.example to .env, fill in the values and restart the app."
+  },
+  "menu": {
+    "label": "Main navigation"
+  },
+  "sections": {
+    "cityAdministrator": "City Administrator",
+    "partner": "Partner",
+    "travelerAdministration": "Traveler Administration",
+    "empty": "This section is empty for now."
+  }
+}
