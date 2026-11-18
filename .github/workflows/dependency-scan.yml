@@ -37,13 +37,21 @@ jobs:
       # The scanner exits with 1 when it finds anything, whatever the severity.
       # The build fails only for a high or critical finding (CVSS 7.0 or more)
       # that osv-scanner.toml does not list. Lower ones are shown but do not fail.
+      #
+      # The scanner fetches the parent POMs of the Maven projects from Maven Central,
+      # which sometimes answers 429 (too many requests) to a shared runner. Exit
+      # codes above 1 mean the scanner itself failed, so it is tried again.
       - name: Scan
         run: |
-          status=0
-          "$RUNNER_TEMP/osv-scanner" scan source --recursive \
-            --config osv-scanner.toml --format json --output-file osv-result.json . || status=$?
+          for attempt in 1 2 3; do
+            status=0
+            "$RUNNER_TEMP/osv-scanner" scan source --recursive \
+              --config osv-scanner.toml --format json --output-file osv-result.json . || status=$?
+            [ "$status" -le 1 ] && break
+            echo "OSV-Scanner itself failed with exit code $status (attempt $attempt of 3)." >&2
+            [ "$attempt" -lt 3 ] && sleep $((attempt * 30))
+          done
           if [ "$status" -gt 1 ]; then
-            echo "OSV-Scanner itself failed with exit code $status." >&2
             exit "$status"
           fi
 

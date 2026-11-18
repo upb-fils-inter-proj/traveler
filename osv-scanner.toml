@@ -9,10 +9,20 @@
 
 [[IgnoredVulns]]
 id = "GHSA-j9f9-w8pj-32f8"
-ignoreUntil = 2026-12-31
+effectiveUntil = 2026-12-31
 reason = "CVE-2026-47890: Server-Sent Events with view fragments in Spring MVC. The backends use no SSE and no views. No fix for Spring Framework 6.2."
 
 [[IgnoredVulns]]
 id = "GHSA-pc63-qcmh-9cmg"
-ignoreUntil = 2026-12-31
+effectiveUntil = 2026-12-31
 reason = "CVE-2026-47884: XsltView with a catch-all mapping. The backends use no view technology. No fix for Spring Framework 6.2."
+
+# picomatch is a development dependency of the admin web app: only vite and vitest
+# (through fdir and tinyglobby) use it, and none of it is shipped. The advisory is a
+# regular expression denial of service through crafted glob patterns, and 4.0.7 is
+# the newest release, so there is no fix yet.
+
+[[IgnoredVulns]]
+id = "GHSA-fc5q-39xc-vjpf"
+effectiveUntil = 2026-12-31
+reason = "CVE-2026-112366: ReDoS in picomatch through crafted glob patterns. Used only by vite and vitest in admin-web, not shipped. 4.0.7 is the newest release and has no fix."
