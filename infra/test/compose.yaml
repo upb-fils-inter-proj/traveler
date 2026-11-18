@@ -115,6 +115,40 @@ services:
       start_period: 40s
     restart: unless-stopped
 
+  # One public gateway per backend: HTTPS, rate limiting, load balancing.
+  # These are the only services that publish a port.
+  tourist-gateway:
+    image: nginx:1.28-alpine
+    environment:
+      TOURIST_SERVER_NAME: ${TOURIST_SERVER_NAME:?Set TOURIST_SERVER_NAME in .env}
+      TOURIST_RATE_LIMIT: ${TOURIST_RATE_LIMIT:-10r/s}
+    volumes:
+      - ./nginx/templates/tourist-gateway.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - ./certs/tourist:/etc/nginx/certs:ro
+    ports:
+      - "${TOURIST_HTTPS_PORT:-443}:443"
+    depends_on:
+      tourist-backend:
+        condition: service_healthy
+    networks: [tourist-edge]
+    restart: unless-stopped
+
+  admin-gateway:
+    image: nginx:1.28-alpine
+    environment:
+      ADMIN_SERVER_NAME: ${ADMIN_SERVER_NAME:?Set ADMIN_SERVER_NAME in .env}
+      ADMIN_RATE_LIMIT: ${ADMIN_RATE_LIMIT:-10r/s}
+    volumes:
+      - ./nginx/templates/admin-gateway.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - ./certs/admin:/etc/nginx/certs:ro
+    ports:
+      - "${ADMIN_HTTPS_PORT:-8443}:443"
+    depends_on:
+      admin-backend:
+        condition: service_healthy
+    networks: [admin-edge]
+    restart: unless-stopped
+
 networks:
   tourist-edge:
   admin-edge:

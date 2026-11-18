@@ -20,9 +20,33 @@ docker compose ps
 | `tourist-db`, `admin-db` | Two separate PostgreSQL 16 + PostGIS servers, one per backend |
 | `redis` | Cache of the tourist backend |
 | `tourist-backend`, `admin-backend` | The two backends, built from this repository |
+| `tourist-gateway`, `admin-gateway` | One public Nginx gateway per backend: HTTPS, rate limiting, load balancing |
 
 The data networks and the network between the backends are internal: the
 databases and Redis can only be reached from their own backend, and the
 backends can only reach each other over the `backends` network.
 
 Each backend runs its Flyway migrations when it starts.
+
+### Gateways and certificates
+
+Only the gateways publish a port: the tourist gateway on `TOURIST_HTTPS_PORT`
+(443) and the admin gateway on `ADMIN_HTTPS_PORT` (8443), HTTPS only. Both block
+`/internal/` and `/actuator/`, so the calls between the backends and the
+health endpoints are never public.
+
+Each gateway reads `fullchain.pem` and `privkey.pem` from its own folder,
+`test/certs/tourist` and `test/certs/admin`. The certificates are never
+committed. For a first run, create throwaway ones:
+
+```bash
+cd infra/test
+for gateway in tourist admin; do
+  mkdir -p certs/$gateway
+  openssl req -x509 -newkey rsa:2048 -nodes -days 30 -subj "/CN=localhost" \
+    -keyout certs/$gateway/privkey.pem -out certs/$gateway/fullchain.pem
+done
+```
+
+To balance the load over more instances of a backend, add a `server` line to the
+`upstream` block of its template in `test/nginx/templates`.

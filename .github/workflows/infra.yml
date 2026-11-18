@@ -1,0 +1,56 @@
+name: Infrastructure
+
+on:
+  pull_request:
+    paths:
+      - "infra/**"
+      - ".github/workflows/infra.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "infra/**"
+      - ".github/workflows/infra.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: infra-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate the test environment files
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra/test
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Validate the Compose file
+        run: docker compose --env-file .env.example config --quiet
+
+      - name: Create throwaway certificates
+        run: |
+          for gateway in tourist admin; do
+            mkdir -p "certs/$gateway"
+            openssl req -x509 -newkey rsa:2048 -nodes -days 1 -subj "/CN=localhost" \
+              -keyout "certs/$gateway/privkey.pem" -out "certs/$gateway/fullchain.pem"
+          done
+
+      # Renders each template the way the Nginx container does, then lets Nginx check it.
+      - name: Check the Nginx configuration of both gateways
+        run: |
+          for gateway in tourist admin; do
+            upper=$(echo "$gateway" | tr '[:lower:]' '[:upper:]')
+            docker run --rm \
+              --add-host "${gateway}-backend:127.0.0.1" \
+              -e "${upper}_SERVER_NAME=localhost" \
+              -e "${upper}_RATE_LIMIT=10r/s" \
+              -v "$PWD/nginx/templates/${gateway}-gateway.conf.template:/etc/nginx/templates/default.conf.template:ro" \
+              -v "$PWD/certs/$gateway:/etc/nginx/certs:ro" \
+              nginx:1.28-alpine \
+              sh -c '/docker-entrypoint.d/20-envsubst-on-templates.sh && nginx -t'
+          done
