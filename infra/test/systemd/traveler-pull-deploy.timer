@@ -1,0 +1,11 @@
+[Unit]
+Description=Check the main branch for a new version of the Traveler test environment
+
+[Timer]
+OnBootSec=2min
+# Counted from the end of the previous run, so a long build never overlaps itself.
+OnUnitInactiveSec=5min
+RandomizedDelaySec=30
+
+[Install]
+WantedBy=timers.target

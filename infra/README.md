@@ -7,8 +7,8 @@ PostgreSQL + PostGIS servers, Redis, MinIO and authentik.
 ## Test environment
 
 [`test/`](test) holds the Compose file of the test environment. How it is
-deployed and rolled back is in [`test/DEPLOY.md`](test/DEPLOY.md), and the
-self-hosted runner is in [`test/RUNNER.md`](test/RUNNER.md).
+deployed and rolled back is in [`test/DEPLOY.md`](test/DEPLOY.md). The host pulls
+`main` itself with a timer, so no CI runner is needed.
 
 ```bash
 cd infra/test
