@@ -1,0 +1,46 @@
+# Public gateway of the admin backend: HTTPS termination, rate limiting and
+# load balancing. When the container starts, the Nginx image replaces the
+# names in braces below with the values of the environment variables.
+
+limit_req_zone $binary_remote_addr zone=admin_api:10m rate=${ADMIN_RATE_LIMIT};
+
+# Add one server line per instance of the admin backend to balance the load.
+upstream admin_backend {
+    server admin-backend:8080;
+}
+
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name ${ADMIN_SERVER_NAME};
+
+    ssl_certificate     /etc/nginx/certs/fullchain.pem;
+    ssl_certificate_key /etc/nginx/certs/privkey.pem;
+    ssl_protocols       TLSv1.2 TLSv1.3;
+    ssl_session_cache   shared:admin_tls:10m;
+    ssl_session_timeout 1d;
+
+    add_header Strict-Transport-Security "max-age=31536000" always;
+
+    # The internal API and the actuator endpoints are never public.
+    location ^~ /internal/ {
+        return 404;
+    }
+    location ^~ /actuator/ {
+        return 404;
+    }
+
+    location / {
+        limit_req zone=admin_api burst=20 nodelay;
+        limit_req_status 429;
+
+        proxy_pass http://admin_backend;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_connect_timeout 3s;
+        proxy_read_timeout 10s;
+    }
+}

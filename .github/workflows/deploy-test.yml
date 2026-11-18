@@ -1,0 +1,32 @@
+name: Deploy test environment
+
+# Runs on the self-hosted runner at Alacrity Education NGO, so no inbound access to
+# the NGO's network is needed. It only runs for pushes to main and manual starts,
+# never for pull requests, so code from a fork cannot reach the runner.
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "tourist-backend/**"
+      - "admin-backend/**"
+      - "api/**"
+      - "infra/test/**"
+      - ".github/workflows/deploy-test.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-test
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy main to the test environment
+    runs-on: [self-hosted, traveler-test]
+    steps:
+      - uses: actions/checkout@v7
+      - name: Deploy
+        run: ./infra/test/deploy.sh

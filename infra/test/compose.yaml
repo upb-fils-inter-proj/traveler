@@ -1,0 +1,164 @@
+# Test environment at Alacrity Education NGO.
+#
+#   cp .env.example .env     (then fill in the passwords)
+#   docker compose up -d --build
+#
+# Networks keep the data apart, as the architecture requires:
+#   tourist-data  the tourist backend, its PostgreSQL server and Redis
+#   admin-data    the admin backend and its PostgreSQL server
+#   backends      the only path between the two backends (no outside access)
+#   *-edge        a backend and its public gateway
+#
+# Not included yet: object storage. The offer names MinIO for the test
+# environment, but the MinIO repository is archived and its image cannot be
+# pulled anonymously, so the team has to choose an S3-compatible replacement.
+# Neither backend uses object storage yet.
+
+name: traveler-test
+
+services:
+  tourist-db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_DB: tourist
+      POSTGRES_USER: tourist
+      POSTGRES_PASSWORD: ${TOURIST_DB_PASSWORD:?Set TOURIST_DB_PASSWORD in .env}
+    volumes:
+      - tourist-db-data:/var/lib/postgresql/data
+    networks: [tourist-data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tourist -d tourist"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  admin-db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_DB: admin
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: ${ADMIN_DB_PASSWORD:?Set ADMIN_DB_PASSWORD in .env}
+    volumes:
+      - admin-db-data:/var/lib/postgresql/data
+    networks: [admin-data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Cache only: everything in it can be rebuilt from the databases.
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}", "--save", "", "--appendonly", "no"]
+    environment:
+      REDISCLI_AUTH: ${REDIS_PASSWORD}
+    networks: [tourist-data]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  tourist-backend:
+    build:
+      context: ../..
+      dockerfile: tourist-backend/Dockerfile
+    image: traveler/tourist-backend:${IMAGE_TAG:-latest}
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://tourist-db:5432/tourist
+      SPRING_DATASOURCE_USERNAME: tourist
+      SPRING_DATASOURCE_PASSWORD: ${TOURIST_DB_PASSWORD}
+      TRAVELER_ADMIN_BACKEND_BASE_URL: http://admin-backend:8080
+    depends_on:
+      tourist-db:
+        condition: service_healthy
+    networks: [tourist-edge, tourist-data, backends]
+    healthcheck:
+      # The runtime image has no curl, so the check talks to the port with bash.
+      test:
+        - CMD
+        - bash
+        - -c
+        - exec 3<>/dev/tcp/127.0.0.1/8080 && printf 'GET /actuator/health HTTP/1.0\r\n\r\n' >&3 && grep -q '"status":"UP"' <&3
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    restart: unless-stopped
+
+  admin-backend:
+    build:
+      context: ../..
+      dockerfile: admin-backend/Dockerfile
+    image: traveler/admin-backend:${IMAGE_TAG:-latest}
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://admin-db:5432/admin
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: ${ADMIN_DB_PASSWORD}
+    depends_on:
+      admin-db:
+        condition: service_healthy
+    networks: [admin-edge, admin-data, backends]
+    healthcheck:
+      test:
+        - CMD
+        - bash
+        - -c
+        - exec 3<>/dev/tcp/127.0.0.1/8080 && printf 'GET /actuator/health HTTP/1.0\r\n\r\n' >&3 && grep -q '"status":"UP"' <&3
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    restart: unless-stopped
+
+  # One public gateway per backend: HTTPS, rate limiting, load balancing.
+  # These are the only services that publish a port.
+  tourist-gateway:
+    image: nginx:1.28-alpine
+    environment:
+      TOURIST_SERVER_NAME: ${TOURIST_SERVER_NAME:?Set TOURIST_SERVER_NAME in .env}
+      TOURIST_RATE_LIMIT: ${TOURIST_RATE_LIMIT:-10r/s}
+    volumes:
+      - ./nginx/templates/tourist-gateway.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - ${CERTS_DIR:-./certs}/tourist:/etc/nginx/certs:ro
+    ports:
+      - "${TOURIST_HTTPS_PORT:-443}:443"
+    depends_on:
+      tourist-backend:
+        condition: service_healthy
+    networks: [tourist-edge]
+    restart: unless-stopped
+
+  admin-gateway:
+    image: nginx:1.28-alpine
+    environment:
+      ADMIN_SERVER_NAME: ${ADMIN_SERVER_NAME:?Set ADMIN_SERVER_NAME in .env}
+      ADMIN_RATE_LIMIT: ${ADMIN_RATE_LIMIT:-10r/s}
+    volumes:
+      - ./nginx/templates/admin-gateway.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - ${CERTS_DIR:-./certs}/admin:/etc/nginx/certs:ro
+    ports:
+      - "${ADMIN_HTTPS_PORT:-8443}:443"
+    depends_on:
+      admin-backend:
+        condition: service_healthy
+    networks: [admin-edge]
+    restart: unless-stopped
+
+networks:
+  tourist-edge:
+  admin-edge:
+  tourist-data:
+    internal: true
+  admin-data:
+    internal: true
+  backends:
+    internal: true
+
+volumes:
+  tourist-db-data:
+  admin-db-data:
