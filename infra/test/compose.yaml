@@ -18,7 +18,7 @@ name: traveler-test
 
 services:
   tourist-db:
-    image: postgis/postgis:16-3.4
+    image: postgis/postgis:16-3.6
     environment:
       POSTGRES_DB: tourist
       POSTGRES_USER: tourist
@@ -34,7 +34,7 @@ services:
     restart: unless-stopped
 
   admin-db:
-    image: postgis/postgis:16-3.4
+    image: postgis/postgis:16-3.6
     environment:
       POSTGRES_DB: admin
       POSTGRES_USER: admin
