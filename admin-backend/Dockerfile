@@ -6,8 +6,7 @@ WORKDIR /workspace
 COPY api ./api
 COPY admin-backend ./admin-backend
 WORKDIR /workspace/admin-backend
-RUN --mount=type=cache,target=/root/.m2 \
-    mvn -B -ntp -Dmaven.test.skip=true -Dspotless.check.skip=true package
+RUN mvn -B -ntp -Dmaven.test.skip=true -Dspotless.check.skip=true package
 
 FROM eclipse-temurin:21-jre
 RUN groupadd --system app && useradd --system --gid app --no-create-home app
