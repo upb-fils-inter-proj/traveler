@@ -8,10 +8,10 @@ coordinates:
   lat: 45.36009
   lon: 25.54273
 image:
-  file: pending
-  licence: pending
-  author: pending
-  source: pending
+  file: images/01-peles-castle.jpg
+  licence: All rights reserved
+  author: Traveler team
+  source: Provided by the Traveler team
 status: researched
 ---
 

@@ -8,10 +8,10 @@ coordinates:
   lat: 45.35518
   lon: 25.55338
 image:
-  file: pending
-  licence: pending
-  author: pending
-  source: pending
+  file: images/04-sinaia-casino.jpg
+  licence: All rights reserved
+  author: Traveler team
+  source: Provided by the Traveler team
 status: researched
 ---
 
