@@ -1,7 +1,7 @@
 # The build context is the repository root, because the build reads api/internal-api.yaml:
 #   docker build -f tourist-backend/Dockerfile -t traveler/tourist-backend .
 
-FROM maven:3.9-eclipse-temurin-21 AS build
+FROM maven:3.9-eclipse-temurin-26 AS build
 WORKDIR /workspace
 COPY api ./api
 COPY tourist-backend ./tourist-backend
