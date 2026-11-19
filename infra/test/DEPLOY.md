@@ -15,13 +15,15 @@ needs neither a CI runner nor any inbound access.
    ```
 
 3. Create `/opt/traveler/.env` from [`.env.example`](.env.example). Replace every
-   `change-me`, set the two server names, and set
-   `CERTS_DIR=/opt/traveler/certs`.
+   `change-me` (the comments there say how to generate the authentik values),
+   set the two server names, and set `CERTS_DIR=/opt/traveler/certs`.
 4. Put `fullchain.pem` and `privkey.pem` for each gateway in
    `/opt/traveler/certs/tourist` and `/opt/traveler/certs/admin`.
 5. Open only the two gateway ports to the outside (443 and 8443 by default).
-   Nothing else is published. Behind a tunnel, publish them on the loopback
-   interface only, see "Behind a tunnel" below.
+   authentik publishes plain HTTP on `AUTHENTIK_HTTP_PORT` (9000): never open it,
+   reach it through the tunnel or an HTTPS proxy. Nothing else is published.
+   Behind a tunnel, publish all three on the loopback interface only, see
+   "Behind a tunnel" below.
 6. Clone the repository to `/opt/traveler/repo`, then install the automatic
    deployment, see below.
 
@@ -46,7 +48,7 @@ cd <checkout of the repository>/infra/test
 ```
 
 `deploy.sh` tags the images of both backends with the commit hash, starts the
-stack, waits up to 5 minutes for both backends to be healthy, and appends the
+stack, waits up to 10 minutes for every service to be healthy, and appends the
 tag to `/opt/traveler/deployed-tags`. If the backends do not become healthy it
 prints the state and the last log lines and fails.
 
@@ -90,10 +92,17 @@ services:
   admin-gateway:
     ports: !override
       - "127.0.0.1:${ADMIN_HTTPS_PORT:-8443}:443"
+  authentik-server:
+    ports: !override
+      - "127.0.0.1:${AUTHENTIK_HTTP_PORT:-9000}:9000"
 ```
 
 Point the tunnel at `https://localhost:443` and `https://localhost:8443`, with
-certificate verification off for a self-signed certificate.
+certificate verification off for a self-signed certificate. Route the authentik
+host name to `http://localhost:9000`, for example
+`https://traveller-auth.lucasain.dev` → `http://localhost:9000`. The tunnel must
+pass on the public host name and `X-Forwarded-Proto: https`: authentik builds
+its issuer URLs from them.
 
 ### An account that is not in the docker group
 
@@ -109,6 +118,73 @@ exec sudo -n env "IMAGE_TAG=${IMAGE_TAG:-latest}" /usr/bin/docker "$@"
 Save it as `/opt/traveler/bin/docker` with mode 755. The account then needs
 passwordless `sudo`, so use a dedicated account where that is possible.
 
+## authentik
+
+authentik (`ghcr.io/goauthentik/server:2026.8.5`) runs in the same stack as
+`authentik-db`, `authentik-server` and `authentik-worker`. The example host
+below is `https://traveller-auth.lucasain.dev`.
+
+**On a server that already runs the stack**, add `PG_PASS`,
+`AUTHENTIK_SECRET_KEY`, `AUTHENTIK_BOOTSTRAP_PASSWORD` and
+`AUTHENTIK_BOOTSTRAP_EMAIL` to `/opt/traveler/.env`, and the `authentik-server`
+lines to `compose.override.yaml`, before this reaches `main`. Otherwise the
+deployment stops with `Set ... in .env`.
+
+**First login.** Open `https://traveller-auth.lucasain.dev/` and sign in as
+`akadmin` with `AUTHENTIK_BOOTSTRAP_PASSWORD`. The bootstrap values are read on
+the very first start only, so change the password in authentik afterwards.
+
+**Upgrades.** Change the tag of both authentik services together, after reading
+the release notes. authentik does not support downgrading, so back up its
+database first (see "Roll back").
+
+### Sign-in applications
+
+The blueprint [`authentik/blueprints/traveler.yaml`](authentik/blueprints/traveler.yaml)
+creates the two applications. The worker applies it by itself when it starts
+and whenever the file changes. Changes made to these two applications in the
+authentik interface are overwritten the next time it is applied.
+
+| Application | Slug = client ID | Redirect URIs |
+| --- | --- | --- |
+| Traveler admin (staff) | `traveler-admin` | `http://localhost:5173/auth/callback`, `<ADMIN_WEB_URL>/auth/callback` |
+| Traveler app (tourists) | `traveler-app` | `TRAVELER_APP_REDIRECT_URI`, a placeholder until the mobile app work (EN-05) sets it |
+
+- Issuer: `https://<authentik host>/application/o/<slug>/`, for example
+  `https://traveller-auth.lucasain.dev/application/o/traveler-admin/`. Its
+  `.well-known/openid-configuration` lists every endpoint.
+- Public clients (no secret), authorization code flow with PKCE. Access tokens
+  last 15 minutes, refresh tokens 30 days; authentik issues a refresh token
+  only when the client asks for the `offline_access` scope.
+- `aud` is the client ID, so each backend accepts only its own application's
+  tokens.
+- `sub` is the authentik user's UUID (`sub_mode: user_uuid`) instead of the
+  default hashed ID, because the admin backend maps (`iss`, `sub`) to a row in
+  `staff_users`, and those rows are seeded by hand on the test environment. The
+  user's page in the admin interface does not show the UUID: while signed in
+  as an administrator, open
+  `https://traveller-auth.lucasain.dev/api/v3/core/users/?username=<username>`
+  and read `uuid`.
+
+The admin web app (`admin-web/.env`) uses the "Traveler admin" application:
+
+| Variable | Value |
+| --- | --- |
+| `VITE_OIDC_AUTHORITY` | `https://traveller-auth.lucasain.dev/application/o/traveler-admin/` |
+| `VITE_OIDC_CLIENT_ID` | `traveler-admin` |
+| `VITE_OIDC_REDIRECT_URI` | `http://localhost:5173/auth/callback`, or `<ADMIN_WEB_URL>/auth/callback` |
+| `VITE_OIDC_POST_LOGOUT_REDIRECT_URI` | `http://localhost:5173/login`, or `<ADMIN_WEB_URL>/login` |
+| `VITE_OIDC_SCOPE` | `openid profile email` |
+
+`ADMIN_WEB_URL` and `TRAVELER_APP_REDIRECT_URI` are read when the blueprint is
+applied. After changing them in `/opt/traveler/.env` and deploying, the file
+itself has not changed, so apply it by hand:
+
+```bash
+docker compose --env-file /opt/traveler/.env exec authentik-worker \
+  ak apply_blueprint custom/traveler.yaml
+```
+
 ## Check a deployment
 
 ```bash
@@ -116,12 +192,14 @@ cd infra/test
 docker compose --env-file /opt/traveler/.env ps
 ```
 
-Both backends must show `healthy`. Through the public gateways, the OpenAPI
-description must answer (use `-k` only with a self-signed certificate):
+Both backends, `authentik-server` and `authentik-worker` must show `healthy`.
+Through the public gateways, the OpenAPI description must answer (use `-k` only
+with a self-signed certificate), and authentik must answer its health check:
 
 ```bash
 curl -k https://<tourist-server-name>/v3/api-docs
 curl -k https://<admin-server-name>:8443/v3/api-docs
+curl -i https://traveller-auth.lucasain.dev/-/health/ready/
 ```
 
 `/actuator/` and `/internal/` answer 404 from outside, on purpose.
@@ -171,7 +249,16 @@ docker compose --env-file /opt/traveler/.env down --volumes
 ./deploy.sh
 ```
 
-This deletes both databases.
+This deletes all three databases, including every authentik account.
+
+authentik's own migrations only go forward too, and authentik does not support
+downgrading. A rollback to a commit with an older authentik image needs its
+database restored from a backup taken before the upgrade:
+
+```bash
+docker compose --env-file /opt/traveler/.env exec -T authentik-db \
+  pg_dump -U authentik authentik > authentik-$(date +%F).sql
+```
 
 ## Everyday commands
 
