@@ -94,6 +94,12 @@
           <groupId>software.amazon.awssdk</groupId>
           <artifactId>apache-client</artifactId>
         </exclusion>
+        <!-- Unused (the client is built with url-connection-client), and it brings
+             httpcore5 versions with known vulnerabilities. -->
+        <exclusion>
+          <groupId>software.amazon.awssdk</groupId>
+          <artifactId>apache5-client</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
