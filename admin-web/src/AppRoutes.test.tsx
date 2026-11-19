@@ -4,6 +4,7 @@ import { useAuth } from 'react-oidc-context'
 import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import AppRoutes from './AppRoutes.tsx'
+import { CITY_ADMIN, mockFetch, reply } from './test/api.ts'
 import { makeUser, mockAuth } from './test/auth.ts'
 
 vi.mock('react-oidc-context', () => ({ useAuth: vi.fn() }))
@@ -22,6 +23,10 @@ describe('AppRoutes', () => {
     vi.mocked(useAuth).mockReturnValue(
       mockAuth({ isAuthenticated: true, user: makeUser({ name: 'Ana Pop' }) }),
     )
+    mockFetch({
+      'GET /admin/me': reply.json(CITY_ADMIN),
+      'GET /admin/attractions?includeRemoved=false': reply.json({ items: [] }),
+    })
   })
 
   it('opens the first section from the root path', () => {
@@ -32,8 +37,17 @@ describe('AppRoutes', () => {
     ).toBeInTheDocument()
   })
 
+  it('shows the attractions in the City Administrator section', async () => {
+    renderAt('/city-administrator')
+
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'City Administrator' }),
+    ).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 2, name: 'Attractions' })).toBeInTheDocument()
+    expect(document.title).toBe('City Administrator - Traveler Admin')
+  })
+
   it.each([
-    ['/city-administrator', 'City Administrator'],
     ['/partner', 'Partner'],
     ['/traveler-administration', 'Traveler Administration'],
   ])('shows the empty page of %s', (path, title) => {
