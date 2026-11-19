@@ -23,10 +23,13 @@ docker compose ps
 | `redis` | Cache of the tourist backend |
 | `tourist-backend`, `admin-backend` | The two backends, built from this repository |
 | `tourist-gateway`, `admin-gateway` | One public Nginx gateway per backend: HTTPS, rate limiting, load balancing |
+| `authentik-server`, `authentik-worker` | authentik 2026.8.5, the identity provider (OIDC) of both applications |
+| `authentik-db` | authentik's own PostgreSQL 16 server |
 
 The data networks and the network between the backends are internal: the
-databases and Redis can only be reached from their own backend, and the
-backends can only reach each other over the `backends` network.
+databases and Redis can only be reached from their own backend (authentik's
+database only from authentik), and the backends can only reach each other over
+the `backends` network.
 
 Each backend runs its Flyway migrations when it starts.
 
@@ -35,7 +38,9 @@ Each backend runs its Flyway migrations when it starts.
 Only the gateways publish a port: the tourist gateway on `TOURIST_HTTPS_PORT`
 (443) and the admin gateway on `ADMIN_HTTPS_PORT` (8443), HTTPS only. Both block
 `/internal/` and `/actuator/`, so the calls between the backends and the
-health endpoints are never public.
+health endpoints are never public. The one exception is authentik, which
+publishes plain HTTP on `AUTHENTIK_HTTP_PORT` (9000) for a tunnel or an HTTPS
+proxy in front of it, see [`test/DEPLOY.md`](test/DEPLOY.md).
 
 Each gateway reads `fullchain.pem` and `privkey.pem` from its own folder,
 `test/certs/tourist` and `test/certs/admin`. The certificates are never

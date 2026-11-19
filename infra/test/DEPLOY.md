@@ -15,13 +15,15 @@ needs neither a CI runner nor any inbound access.
    ```
 
 3. Create `/opt/traveler/.env` from [`.env.example`](.env.example). Replace every
-   `change-me`, set the two server names, and set
-   `CERTS_DIR=/opt/traveler/certs`.
+   `change-me` (the comments there say how to generate the authentik values),
+   set the two server names, and set `CERTS_DIR=/opt/traveler/certs`.
 4. Put `fullchain.pem` and `privkey.pem` for each gateway in
    `/opt/traveler/certs/tourist` and `/opt/traveler/certs/admin`.
 5. Open only the two gateway ports to the outside (443 and 8443 by default).
-   Nothing else is published. Behind a tunnel, publish them on the loopback
-   interface only, see "Behind a tunnel" below.
+   authentik publishes plain HTTP on `AUTHENTIK_HTTP_PORT` (9000): never open it,
+   reach it through the tunnel or an HTTPS proxy. Nothing else is published.
+   Behind a tunnel, publish all three on the loopback interface only, see
+   "Behind a tunnel" below.
 6. Clone the repository to `/opt/traveler/repo`, then install the automatic
    deployment, see below.
 
@@ -90,10 +92,17 @@ services:
   admin-gateway:
     ports: !override
       - "127.0.0.1:${ADMIN_HTTPS_PORT:-8443}:443"
+  authentik-server:
+    ports: !override
+      - "127.0.0.1:${AUTHENTIK_HTTP_PORT:-9000}:9000"
 ```
 
 Point the tunnel at `https://localhost:443` and `https://localhost:8443`, with
-certificate verification off for a self-signed certificate.
+certificate verification off for a self-signed certificate. Route the authentik
+host name to `http://localhost:9000`, for example
+`https://traveller-auth.lucasain.dev` → `http://localhost:9000`. The tunnel must
+pass on the public host name and `X-Forwarded-Proto: https`: authentik builds
+its issuer URLs from them.
 
 ### An account that is not in the docker group
 
@@ -109,6 +118,26 @@ exec sudo -n env "IMAGE_TAG=${IMAGE_TAG:-latest}" /usr/bin/docker "$@"
 Save it as `/opt/traveler/bin/docker` with mode 755. The account then needs
 passwordless `sudo`, so use a dedicated account where that is possible.
 
+## authentik
+
+authentik (`ghcr.io/goauthentik/server:2026.8.5`) runs in the same stack as
+`authentik-db`, `authentik-server` and `authentik-worker`. The example host
+below is `https://traveller-auth.lucasain.dev`.
+
+**On a server that already runs the stack**, add `PG_PASS`,
+`AUTHENTIK_SECRET_KEY`, `AUTHENTIK_BOOTSTRAP_PASSWORD` and
+`AUTHENTIK_BOOTSTRAP_EMAIL` to `/opt/traveler/.env`, and the `authentik-server`
+lines to `compose.override.yaml`, before this reaches `main`. Otherwise the
+deployment stops with `Set ... in .env`.
+
+**First login.** Open `https://traveller-auth.lucasain.dev/` and sign in as
+`akadmin` with `AUTHENTIK_BOOTSTRAP_PASSWORD`. The bootstrap values are read on
+the very first start only, so change the password in authentik afterwards.
+
+**Upgrades.** Change the tag of both authentik services together, after reading
+the release notes. authentik does not support downgrading, so back up its
+database first (see "Roll back").
+
 ## Check a deployment
 
 ```bash
@@ -116,12 +145,14 @@ cd infra/test
 docker compose --env-file /opt/traveler/.env ps
 ```
 
-Both backends must show `healthy`. Through the public gateways, the OpenAPI
-description must answer (use `-k` only with a self-signed certificate):
+Both backends, `authentik-server` and `authentik-worker` must show `healthy`.
+Through the public gateways, the OpenAPI description must answer (use `-k` only
+with a self-signed certificate), and authentik must answer its health check:
 
 ```bash
 curl -k https://<tourist-server-name>/v3/api-docs
 curl -k https://<admin-server-name>:8443/v3/api-docs
+curl -i https://traveller-auth.lucasain.dev/-/health/ready/
 ```
 
 `/actuator/` and `/internal/` answer 404 from outside, on purpose.
@@ -171,7 +202,16 @@ docker compose --env-file /opt/traveler/.env down --volumes
 ./deploy.sh
 ```
 
-This deletes both databases.
+This deletes all three databases, including every authentik account.
+
+authentik's own migrations only go forward too, and authentik does not support
+downgrading. A rollback to a commit with an older authentik image needs its
+database restored from a backup taken before the upgrade:
+
+```bash
+docker compose --env-file /opt/traveler/.env exec -T authentik-db \
+  pg_dump -U authentik authentik > authentik-$(date +%F).sql
+```
 
 ## Everyday commands
 
