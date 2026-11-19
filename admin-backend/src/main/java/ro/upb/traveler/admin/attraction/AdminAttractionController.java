@@ -7,6 +7,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.UUID;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.InvalidMediaTypeException;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import ro.upb.traveler.admin.qr.QrCodeService;
 import ro.upb.traveler.admin.security.StaffAuthentication;
 import ro.upb.traveler.admin.web.ApiErrors;
 
@@ -33,9 +35,11 @@ class AdminAttractionController {
   static final MediaType WEBP = MediaType.parseMediaType("image/webp");
 
   private final AttractionService service;
+  private final QrCodeService qrCodes;
 
-  AdminAttractionController(AttractionService service) {
+  AdminAttractionController(AttractionService service, QrCodeService qrCodes) {
     this.service = service;
+    this.qrCodes = qrCodes;
   }
 
   @GetMapping
@@ -95,6 +99,26 @@ class AdminAttractionController {
   @GetMapping("/{id}/photo")
   ResponseEntity<byte[]> photo(@PathVariable UUID id) {
     return ResponseEntity.ok().contentType(WEBP).body(service.photo(id));
+  }
+
+  @PostMapping("/{id}/qr-code/regenerate")
+  AttractionResponse regenerateQr(@PathVariable UUID id, StaffAuthentication auth) {
+    return AttractionResponse.of(service.regenerateQr(id, auth.getStaff()));
+  }
+
+  @GetMapping("/{id}/qr-code.pdf")
+  ResponseEntity<byte[]> qrCodePdf(@PathVariable UUID id) {
+    Attraction attraction = service.get(id);
+    byte[] pdf = qrCodes.pdf(attraction);
+    return ResponseEntity.ok()
+        .contentType(MediaType.APPLICATION_PDF)
+        .header(
+            HttpHeaders.CONTENT_DISPOSITION,
+            ContentDisposition.attachment()
+                .filename("qr-" + id + "-v" + attraction.qrVersion() + ".pdf")
+                .build()
+                .toString())
+        .body(pdf);
   }
 
   private static boolean isWebp(String contentType) {

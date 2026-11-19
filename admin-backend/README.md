@@ -43,6 +43,18 @@ bucket is created at start if it is missing. While the storage is not configured
 or cannot be reached, the application still runs and the photo endpoints answer
 503.
 
+The QR codes carry a token signed with Ed25519. `TRAVELER_QR_PRIVATE_KEY` is the
+private key, PKCS#8 DER in base64; without it the QR code PDF answers 503. Make one
+with:
+
+```bash
+openssl genpkey -algorithm ed25519 -outform DER | base64 -w0
+```
+
+The tourist backend verifies the tokens with the matching public key
+(`openssl pkey -inform DER -pubout` on the decoded private key). Keep the private
+key out of the repository.
+
 ### Staff accounts on the test environment
 
 Until staff management exists (US-13), add a staff member with SQL. The subject is

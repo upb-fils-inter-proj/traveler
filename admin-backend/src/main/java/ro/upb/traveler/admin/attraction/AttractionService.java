@@ -139,6 +139,16 @@ public class AttractionService {
     return updated;
   }
 
+  /** Increases the QR version, which makes every printed code of the attraction invalid. */
+  public Attraction regenerateQr(UUID id, StaffUser actor) {
+    return change(
+        id,
+        "attraction.qr-regenerate",
+        actor,
+        false,
+        current -> current.withQrVersion(current.qrVersion() + 1));
+  }
+
   public byte[] photo(UUID id) {
     Attraction attraction = get(id);
     if (attraction.photoKey() == null) {

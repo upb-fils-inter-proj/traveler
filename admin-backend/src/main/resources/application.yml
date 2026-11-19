@@ -26,6 +26,10 @@ traveler:
     bucket: ${TRAVELER_S3_BUCKET:}
     access-key: ${TRAVELER_S3_ACCESS_KEY:}
     secret-key: ${TRAVELER_S3_SECRET_KEY:}
+  # Ed25519 key that signs the QR tokens (PKCS#8 DER, base64). Without it the QR PDF
+  # answers 503.
+  qr:
+    private-key: ${TRAVELER_QR_PRIVATE_KEY:}
 
 management:
   endpoints:

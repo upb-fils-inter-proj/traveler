@@ -73,6 +73,23 @@ public record Attraction(
         en);
   }
 
+  Attraction withQrVersion(int qrVersion) {
+    return new Attraction(
+        id,
+        status,
+        location,
+        pointValue,
+        visitMinutes,
+        dangerRadiusM,
+        dangerFlag,
+        dangerMessage,
+        qrVersion,
+        photoKey,
+        version,
+        ro,
+        en);
+  }
+
   Attraction withVersion(long version) {
     return new Attraction(
         id,
