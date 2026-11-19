@@ -138,6 +138,53 @@ the very first start only, so change the password in authentik afterwards.
 the release notes. authentik does not support downgrading, so back up its
 database first (see "Roll back").
 
+### Sign-in applications
+
+The blueprint [`authentik/blueprints/traveler.yaml`](authentik/blueprints/traveler.yaml)
+creates the two applications. The worker applies it by itself when it starts
+and whenever the file changes. Changes made to these two applications in the
+authentik interface are overwritten the next time it is applied.
+
+| Application | Slug = client ID | Redirect URIs |
+| --- | --- | --- |
+| Traveler admin (staff) | `traveler-admin` | `http://localhost:5173/auth/callback`, `<ADMIN_WEB_URL>/auth/callback` |
+| Traveler app (tourists) | `traveler-app` | `TRAVELER_APP_REDIRECT_URI`, a placeholder until the mobile app work (EN-05) sets it |
+
+- Issuer: `https://<authentik host>/application/o/<slug>/`, for example
+  `https://traveller-auth.lucasain.dev/application/o/traveler-admin/`. Its
+  `.well-known/openid-configuration` lists every endpoint.
+- Public clients (no secret), authorization code flow with PKCE. Access tokens
+  last 15 minutes, refresh tokens 30 days; authentik issues a refresh token
+  only when the client asks for the `offline_access` scope.
+- `aud` is the client ID, so each backend accepts only its own application's
+  tokens.
+- `sub` is the authentik user's UUID (`sub_mode: user_uuid`) instead of the
+  default hashed ID, because the admin backend maps (`iss`, `sub`) to a row in
+  `staff_users`, and those rows are seeded by hand on the test environment. The
+  user's page in the admin interface does not show the UUID: while signed in
+  as an administrator, open
+  `https://traveller-auth.lucasain.dev/api/v3/core/users/?username=<username>`
+  and read `uuid`.
+
+The admin web app (`admin-web/.env`) uses the "Traveler admin" application:
+
+| Variable | Value |
+| --- | --- |
+| `VITE_OIDC_AUTHORITY` | `https://traveller-auth.lucasain.dev/application/o/traveler-admin/` |
+| `VITE_OIDC_CLIENT_ID` | `traveler-admin` |
+| `VITE_OIDC_REDIRECT_URI` | `http://localhost:5173/auth/callback`, or `<ADMIN_WEB_URL>/auth/callback` |
+| `VITE_OIDC_POST_LOGOUT_REDIRECT_URI` | `http://localhost:5173/login`, or `<ADMIN_WEB_URL>/login` |
+| `VITE_OIDC_SCOPE` | `openid profile email` |
+
+`ADMIN_WEB_URL` and `TRAVELER_APP_REDIRECT_URI` are read when the blueprint is
+applied. After changing them in `/opt/traveler/.env` and deploying, the file
+itself has not changed, so apply it by hand:
+
+```bash
+docker compose --env-file /opt/traveler/.env exec authentik-worker \
+  ak apply_blueprint custom/traveler.yaml
+```
+
 ## Check a deployment
 
 ```bash

@@ -206,8 +206,14 @@ services:
       # The akadmin account. Only read on the very first start.
       AUTHENTIK_BOOTSTRAP_PASSWORD: ${AUTHENTIK_BOOTSTRAP_PASSWORD:?Set AUTHENTIK_BOOTSTRAP_PASSWORD in .env}
       AUTHENTIK_BOOTSTRAP_EMAIL: ${AUTHENTIK_BOOTSTRAP_EMAIL:?Set AUTHENTIK_BOOTSTRAP_EMAIL in .env}
+      # Read by the blueprint of the Traveler applications. When unset, the
+      # blueprint uses placeholders.
+      ADMIN_WEB_URL: ${ADMIN_WEB_URL:-}
+      TRAVELER_APP_REDIRECT_URI: ${TRAVELER_APP_REDIRECT_URI:-}
     volumes:
       - authentik-data:/data
+      # authentik applies every blueprint under /blueprints by itself.
+      - ./authentik/blueprints:/blueprints/custom:ro
     shm_size: 512mb
     depends_on:
       authentik-db:
