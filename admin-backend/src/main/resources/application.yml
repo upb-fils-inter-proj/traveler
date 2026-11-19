@@ -11,6 +11,26 @@ server:
 app:
   version: "@project.version@"
 
+traveler:
+  # Access tokens of the "Traveler admin" provider in authentik. Without an issuer and a
+  # JWKS URL every token is rejected, so /admin answers 401.
+  security:
+    issuer: ${TRAVELER_SECURITY_ISSUER:}
+    jwk-set-uri: ${TRAVELER_SECURITY_JWK_SET_URI:}
+    audience: ${TRAVELER_SECURITY_AUDIENCE:traveler-admin}
+  # Object storage of the attraction photos (S3 API). While it is not configured or
+  # cannot be reached, the photo endpoints answer 503 and the rest keeps working.
+  s3:
+    endpoint: ${TRAVELER_S3_ENDPOINT:}
+    region: ${TRAVELER_S3_REGION:us-east-1}
+    bucket: ${TRAVELER_S3_BUCKET:}
+    access-key: ${TRAVELER_S3_ACCESS_KEY:}
+    secret-key: ${TRAVELER_S3_SECRET_KEY:}
+  # Ed25519 key that signs the QR tokens (PKCS#8 DER, base64). Without it the QR PDF
+  # answers 503.
+  qr:
+    private-key: ${TRAVELER_QR_PRIVATE_KEY:}
+
 management:
   endpoints:
     web:
