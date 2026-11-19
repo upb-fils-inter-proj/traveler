@@ -20,6 +20,9 @@ public interface AttractionRepository {
 
   List<Attraction> findAll(boolean includeRemoved);
 
+  /** Every attraction with a version greater than {@code since}, removed ones included. */
+  ChangedAttractions findChangedSince(long since);
+
   void insert(Attraction attraction, UUID createdBy);
 
   /** Writes every field of the attraction and both translations. */

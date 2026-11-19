@@ -28,8 +28,175 @@ paths:
               example:
                 service: admin-backend
                 status: UP
+  /internal/v1/attractions:
+    get:
+      tags:
+        - internal
+      operationId: getAttractions
+      summary: List the attractions changed since a version
+      description: >-
+        Every attraction whose version is greater than `since`, or every
+        attraction when `since` is left out. Removed attractions are included
+        (status `removed`) so that caches can drop them. `version` is the
+        highest attraction version, to pass as `since` in the next call.
+      parameters:
+        - name: since
+          in: query
+          required: false
+          description: Highest attraction version the caller already has
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: The attractions changed since the given version
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttractionChanges"
+              example:
+                version: 42
+                attractions:
+                  - id: 0f8fad5b-d9cb-469f-a165-70867728950e
+                    status: open
+                    location:
+                      lat: 45.36009
+                      lon: 25.54273
+                    pointValue: 10
+                    visitMinutes: 15
+                    dangerRadiusM: 100
+                    dangerFlag: false
+                    dangerMessage: null
+                    qrVersion: 1
+                    photoKey: attractions/0f8fad5b-d9cb-469f-a165-70867728950e/7c9e6679-7425-40de-944b-e07fc1f90ae7.webp
+                    version: 42
+                    translations:
+                      ro:
+                        name: Castelul Peleș
+                        description: Castel în Sinaia
+                        history: null
+                      en:
+                        name: Peleș Castle
+                        description: A castle in Sinaia
+                        history: null
 components:
   schemas:
+    AttractionChanges:
+      type: object
+      additionalProperties: false
+      required:
+        - version
+        - attractions
+      properties:
+        version:
+          type: integer
+          format: int64
+          description: Highest attraction version in the admin database, 0 when there is none
+        attractions:
+          type: array
+          items:
+            $ref: "#/components/schemas/InternalAttraction"
+    InternalAttraction:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - status
+        - location
+        - pointValue
+        - visitMinutes
+        - dangerRadiusM
+        - dangerFlag
+        - dangerMessage
+        - qrVersion
+        - photoKey
+        - version
+        - translations
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          description: Closed and removed attractions are hidden from new routes and block check-ins
+          enum:
+            - open
+            - closed
+            - removed
+        location:
+          $ref: "#/components/schemas/GeoPoint"
+        pointValue:
+          type: integer
+          format: int32
+        visitMinutes:
+          type: integer
+          format: int32
+        dangerRadiusM:
+          type: integer
+          format: int32
+          description: Radius of the red area on the map, in meters
+        dangerFlag:
+          type: boolean
+        dangerMessage:
+          type: string
+          nullable: true
+        qrVersion:
+          type: integer
+          format: int32
+          description: Current QR version; a QR token of another version is invalid
+        photoKey:
+          type: string
+          nullable: true
+          description: Key of the photo in object storage
+        version:
+          type: integer
+          format: int64
+          description: Changes with every change of the attraction
+        translations:
+          $ref: "#/components/schemas/InternalAttractionTranslations"
+    GeoPoint:
+      type: object
+      additionalProperties: false
+      required:
+        - lat
+        - lon
+      properties:
+        lat:
+          type: number
+          format: double
+          minimum: -90
+          maximum: 90
+        lon:
+          type: number
+          format: double
+          minimum: -180
+          maximum: 180
+    InternalAttractionTranslations:
+      type: object
+      additionalProperties: false
+      required:
+        - ro
+        - en
+      properties:
+        ro:
+          $ref: "#/components/schemas/InternalAttractionTranslation"
+        en:
+          $ref: "#/components/schemas/InternalAttractionTranslation"
+    InternalAttractionTranslation:
+      type: object
+      additionalProperties: false
+      required:
+        - name
+        - description
+        - history
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        history:
+          type: string
+          nullable: true
     ServiceStatus:
       type: object
       additionalProperties: false

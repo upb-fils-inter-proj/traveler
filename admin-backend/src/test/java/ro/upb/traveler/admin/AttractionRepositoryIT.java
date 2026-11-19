@@ -20,6 +20,7 @@ import ro.upb.traveler.admin.attraction.AttractionInput;
 import ro.upb.traveler.admin.attraction.AttractionRepository;
 import ro.upb.traveler.admin.attraction.AttractionService;
 import ro.upb.traveler.admin.attraction.AttractionStatus;
+import ro.upb.traveler.admin.attraction.ChangedAttractions;
 import ro.upb.traveler.admin.security.StaffRepository;
 import ro.upb.traveler.admin.security.StaffUser;
 
@@ -108,6 +109,23 @@ class AttractionRepositoryIT {
     assertThat(all).contains(open.id(), removed.id());
     assertThat(attractions.findById(removed.id()).orElseThrow().status())
         .isEqualTo(AttractionStatus.REMOVED);
+  }
+
+  @Test
+  void changedSinceReturnsNewerVersionsAndTheHighestVersion() {
+    StaffUser admin = insertStaff("city_admin", "active");
+    Attraction first = service.create(input("Bran", 10, null), admin);
+    Attraction second = service.create(input("Sinaia", 10, null), admin);
+    Attraction closed = service.changeStatus(first.id(), AttractionStatus.CLOSED, admin);
+
+    ChangedAttractions changed = attractions.findChangedSince(first.version());
+
+    assertThat(changed.attractions())
+        .extracting(Attraction::id)
+        .containsExactly(second.id(), first.id());
+    assertThat(changed.attractions().get(1).status()).isEqualTo(AttractionStatus.CLOSED);
+    assertThat(changed.version()).isEqualTo(closed.version());
+    assertThat(attractions.findChangedSince(closed.version()).attractions()).isEmpty();
   }
 
   @Test

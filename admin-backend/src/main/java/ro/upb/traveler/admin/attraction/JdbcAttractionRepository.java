@@ -7,6 +7,8 @@ import java.util.Optional;
 import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 class JdbcAttractionRepository implements AttractionRepository {
@@ -81,6 +83,20 @@ class JdbcAttractionRepository implements AttractionRepository {
         .param("includeRemoved", includeRemoved)
         .query(this::map)
         .list();
+  }
+
+  /** Both queries see the same snapshot, so the version matches the attractions returned. */
+  @Override
+  @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+  public ChangedAttractions findChangedSince(long since) {
+    long version =
+        jdbc.sql("select coalesce(max(version), 0) from attractions").query(Long.class).single();
+    List<Attraction> changed =
+        jdbc.sql(SELECT + " where a.version > :since order by a.version")
+            .param("since", since)
+            .query(this::map)
+            .list();
+    return new ChangedAttractions(version, changed);
   }
 
   @Override

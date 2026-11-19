@@ -73,3 +73,5 @@ values ('<issuer URL>', '<authentik user UUID>', '<email>', 'city_admin');
 - `/swagger-ui.html`: browsable OpenAPI description
 - `/admin/me`: the signed-in staff member (any role)
 - `/admin/attractions`: attraction management (`city_admin` and `traveler_admin`)
+- `/internal/v1/...`: the internal API for the tourist backend
+  ([`api/internal-api.yaml`](../api/internal-api.yaml)), private network only
