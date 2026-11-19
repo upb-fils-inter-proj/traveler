@@ -95,6 +95,16 @@ describe('translations', () => {
     expect(Object.keys(romanian).sort()).toEqual(Object.keys(english).sort())
   })
 
+  it.each(['access.', 'api.', 'attractions.'])(
+    'translate the texts of the attraction screens under %s',
+    (prefix) => {
+      const keys = (texts: Record<string, string>) =>
+        Object.keys(texts).filter((key) => key.startsWith(prefix))
+      expect(keys(english).length).toBeGreaterThan(0)
+      expect(keys(romanian).sort()).toEqual(keys(english).sort())
+    },
+  )
+
   it('have no empty text', () => {
     for (const text of [...Object.values(english), ...Object.values(romanian)]) {
       expect(text.trim()).not.toBe('')

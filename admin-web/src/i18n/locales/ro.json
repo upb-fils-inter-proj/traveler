@@ -37,5 +37,119 @@
     "partner": "Partener",
     "travelerAdministration": "Administrare turiști",
     "empty": "Această secțiune este goală deocamdată."
+  },
+  "access": {
+    "checking": "Se verifică accesul…",
+    "deniedTitle": "Fără acces",
+    "denied": "Contul tău nu poate administra atracții. Doar administratorii de oraș și administrarea Traveler pot face asta. Cere acces unui administrator Traveler dacă ai nevoie."
+  },
+  "api": {
+    "errors": {
+      "network": "Serverul nu a putut fi contactat. Verifică conexiunea și încearcă din nou.",
+      "invalid": "Serverul nu a acceptat datele. Verifică câmpurile marcate.",
+      "unauthorized": "Sesiunea a expirat. Deconectează-te și autentifică-te din nou.",
+      "forbidden": "Nu ai voie să faci această operație.",
+      "notFound": "Atracția nu a fost găsită.",
+      "conflict": "Această modificare nu este posibilă în starea actuală a atracției.",
+      "tooLarge": "Fotografia este prea mare. Limita este de 5 MB.",
+      "unsupportedType": "Serverul acceptă doar fotografii WebP.",
+      "generic": "Ceva nu a funcționat (eroarea {{status}})."
+    },
+    "detail": "Mesajul serverului: {{detail}}",
+    "retry": "Încearcă din nou"
+  },
+  "attractions": {
+    "title": "Atracții",
+    "add": "Adaugă atracție",
+    "showRemoved": "Arată și atracțiile eliminate",
+    "loading": "Se încarcă atracțiile…",
+    "loadingOne": "Se încarcă atracția…",
+    "empty": "Nu există încă atracții.",
+    "columns": {
+      "nameRo": "Nume în română",
+      "nameEn": "Nume în engleză",
+      "status": "Stare",
+      "points": "Puncte",
+      "version": "Versiune"
+    },
+    "status": {
+      "open": "Deschisă",
+      "closed": "Închisă",
+      "removed": "Eliminată"
+    },
+    "backToList": "Înapoi la atracții",
+    "newTitle": "Atracție nouă",
+    "editTitle": "Atracție: {{name}}",
+    "saved": "Atracția a fost salvată.",
+    "removedNotice": "Această atracție a fost eliminată. Eliminarea este definitivă, așa că atracția nu mai poate fi modificată.",
+    "form": {
+      "romanian": "Română",
+      "english": "Engleză",
+      "name": "Nume",
+      "description": "Descriere",
+      "history": "Istoric (opțional)",
+      "sources": "Surse (opțional)",
+      "sourcesHint": "Doar pentru echipă. Sursele nu sunt arătate niciodată turiștilor.",
+      "details": "Vizită",
+      "pointValue": "Puncte",
+      "visitMinutes": "Durata vizitei (minute)",
+      "location": "Locație",
+      "mapHint": "Dă clic pe hartă sau trage acul pentru a stabili locația, ori scrie coordonatele.",
+      "mapLoading": "Se încarcă harta…",
+      "latitude": "Latitudine",
+      "longitude": "Longitudine",
+      "create": "Creează atracția",
+      "save": "Salvează modificările",
+      "saving": "Se salvează…",
+      "fixErrors": "Unele câmpuri trebuie corectate.",
+      "errors": {
+        "required": "Completează acest câmp.",
+        "tooLong": "Folosește cel mult {{max}} de caractere.",
+        "wholeNumber": "Introdu un număr întreg mai mare decât 0.",
+        "number": "Introdu un număr, de exemplu 45.35.",
+        "latitudeRange": "Introdu o latitudine între -90 și 90.",
+        "longitudeRange": "Introdu o longitudine între -180 și 180.",
+        "locationRequired": "Pune acul pe hartă sau introdu coordonatele."
+      }
+    },
+    "actions": {
+      "statusTitle": "Stare",
+      "currentStatus": "Starea actuală: {{status}}",
+      "statusChanged": "Starea a fost schimbată în {{status}}.",
+      "close": "Închide atracția",
+      "reopen": "Redeschide atracția",
+      "remove": "Elimină atracția",
+      "removeConfirmTitle": "Elimini această atracție?",
+      "removeConfirmText": "Eliminarea este definitivă. Atracția dispare din aplicația pentru turiști și nu mai poate fi redeschisă sau modificată.",
+      "removeConfirm": "Elimină definitiv",
+      "cancel": "Anulează"
+    },
+    "photo": {
+      "title": "Fotografie",
+      "loading": "Se încarcă fotografia…",
+      "loadError": "Fotografia nu a putut fi încărcată.",
+      "none": "Nu există încă o fotografie.",
+      "alt": "Fotografie cu {{name}}",
+      "choose": "Încarcă o fotografie",
+      "hint": "Alege un fișier imagine. Este micșorat la cel mult 1600 de pixeli și convertit în WebP înainte de încărcare.",
+      "uploading": "Se încarcă fotografia…",
+      "uploaded": "Fotografia a fost încărcată.",
+      "problems": {
+        "notImage": "Alege un fișier imagine.",
+        "unreadable": "Imaginea nu a putut fi citită. Încearcă alt fișier.",
+        "webpUnsupported": "Acest browser nu poate converti imagini în WebP. Folosește o versiune recentă de Chrome, Edge, Firefox sau Safari.",
+        "tooLarge": "Fotografia convertită are peste 5 MB. Alege o imagine mai mică."
+      }
+    },
+    "qr": {
+      "title": "Cod QR",
+      "version": "Versiunea actuală a codului QR: {{version}}",
+      "print": "Tipărește codul QR",
+      "regenerate": "Generează un cod QR nou",
+      "regenerateConfirmTitle": "Generezi un cod QR nou?",
+      "regenerateConfirmText": "Codurile QR deja tipărite pentru această atracție nu vor mai funcționa. Va trebui să tipărești codul nou și să le înlocuiești la fața locului.",
+      "regenerateConfirm": "Generează codul nou",
+      "regenerated": "A fost generat un cod QR nou. Tipărește-l și înlocuiește codurile vechi."
+    }
   }
 }

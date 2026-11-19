@@ -37,5 +37,119 @@
     "partner": "Partner",
     "travelerAdministration": "Traveler Administration",
     "empty": "This section is empty for now."
+  },
+  "access": {
+    "checking": "Checking your access…",
+    "deniedTitle": "No access",
+    "denied": "Your account cannot manage attractions. Only City Administrators and Traveler Administration can. Ask a Traveler administrator if you need access."
+  },
+  "api": {
+    "errors": {
+      "network": "The server could not be reached. Check your connection and try again.",
+      "invalid": "The server did not accept the data. Check the marked fields.",
+      "unauthorized": "Your session has expired. Sign out and sign in again.",
+      "forbidden": "You are not allowed to do this.",
+      "notFound": "The attraction was not found.",
+      "conflict": "This change is not possible in the attraction's current state.",
+      "tooLarge": "The photo is too large. The limit is 5 MB.",
+      "unsupportedType": "The server accepts only WebP photos.",
+      "generic": "Something went wrong (error {{status}})."
+    },
+    "detail": "Server message: {{detail}}",
+    "retry": "Try again"
+  },
+  "attractions": {
+    "title": "Attractions",
+    "add": "Add attraction",
+    "showRemoved": "Show removed attractions",
+    "loading": "Loading the attractions…",
+    "loadingOne": "Loading the attraction…",
+    "empty": "There are no attractions yet.",
+    "columns": {
+      "nameRo": "Romanian name",
+      "nameEn": "English name",
+      "status": "Status",
+      "points": "Points",
+      "version": "Version"
+    },
+    "status": {
+      "open": "Open",
+      "closed": "Closed",
+      "removed": "Removed"
+    },
+    "backToList": "Back to the attractions",
+    "newTitle": "New attraction",
+    "editTitle": "Attraction: {{name}}",
+    "saved": "The attraction was saved.",
+    "removedNotice": "This attraction was removed. Removal is final, so it can no longer be changed.",
+    "form": {
+      "romanian": "Romanian",
+      "english": "English",
+      "name": "Name",
+      "description": "Description",
+      "history": "History (optional)",
+      "sources": "Sources (optional)",
+      "sourcesHint": "Only for the team. Sources are never shown to tourists.",
+      "details": "Visit",
+      "pointValue": "Points",
+      "visitMinutes": "Visit duration (minutes)",
+      "location": "Location",
+      "mapHint": "Click the map or drag the pin to set the location, or type the coordinates.",
+      "mapLoading": "Loading the map…",
+      "latitude": "Latitude",
+      "longitude": "Longitude",
+      "create": "Create attraction",
+      "save": "Save changes",
+      "saving": "Saving…",
+      "fixErrors": "Some fields need attention.",
+      "errors": {
+        "required": "Fill in this field.",
+        "tooLong": "Use at most {{max}} characters.",
+        "wholeNumber": "Enter a whole number greater than 0.",
+        "number": "Enter a number, for example 45.35.",
+        "latitudeRange": "Enter a latitude between -90 and 90.",
+        "longitudeRange": "Enter a longitude between -180 and 180.",
+        "locationRequired": "Place the pin on the map or enter the coordinates."
+      }
+    },
+    "actions": {
+      "statusTitle": "Status",
+      "currentStatus": "Current status: {{status}}",
+      "statusChanged": "The status was changed to {{status}}.",
+      "close": "Close attraction",
+      "reopen": "Reopen attraction",
+      "remove": "Remove attraction",
+      "removeConfirmTitle": "Remove this attraction?",
+      "removeConfirmText": "Removing is final. The attraction disappears from the tourist app and cannot be reopened or edited again.",
+      "removeConfirm": "Remove for good",
+      "cancel": "Cancel"
+    },
+    "photo": {
+      "title": "Photo",
+      "loading": "Loading the photo…",
+      "loadError": "The photo could not be loaded.",
+      "none": "There is no photo yet.",
+      "alt": "Photo of {{name}}",
+      "choose": "Upload a photo",
+      "hint": "Choose an image file. It is scaled down to at most 1600 pixels and converted to WebP before the upload.",
+      "uploading": "Uploading the photo…",
+      "uploaded": "The photo was uploaded.",
+      "problems": {
+        "notImage": "Choose an image file.",
+        "unreadable": "This image could not be read. Try another file.",
+        "webpUnsupported": "This browser cannot convert images to WebP. Use a recent version of Chrome, Edge, Firefox or Safari.",
+        "tooLarge": "The converted photo is larger than 5 MB. Choose a smaller image."
+      }
+    },
+    "qr": {
+      "title": "QR code",
+      "version": "Current QR code version: {{version}}",
+      "print": "Print QR code",
+      "regenerate": "Generate new QR code",
+      "regenerateConfirmTitle": "Generate a new QR code?",
+      "regenerateConfirmText": "The QR codes already printed for this attraction will stop working. You will have to print the new code and replace them on site.",
+      "regenerateConfirm": "Generate new code",
+      "regenerated": "A new QR code was generated. Print it and replace the old codes."
+    }
   }
 }
