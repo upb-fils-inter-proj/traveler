@@ -36,7 +36,7 @@ else
   build_flag="--build"
 fi
 
-if ! compose up -d "$build_flag" --wait --wait-timeout 300 --remove-orphans; then
+if ! compose up -d "$build_flag" --wait --wait-timeout 600 --remove-orphans; then
   echo "The deployment of $tag did not become healthy." >&2
   compose ps >&2 || true
   compose logs --tail 50 tourist-backend admin-backend >&2 || true

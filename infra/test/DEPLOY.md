@@ -48,7 +48,7 @@ cd <checkout of the repository>/infra/test
 ```
 
 `deploy.sh` tags the images of both backends with the commit hash, starts the
-stack, waits up to 5 minutes for both backends to be healthy, and appends the
+stack, waits up to 10 minutes for every service to be healthy, and appends the
 tag to `/opt/traveler/deployed-tags`. If the backends do not become healthy it
 prints the state and the last log lines and fails.
 
