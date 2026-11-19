@@ -108,10 +108,21 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://admin-db:5432/admin
       SPRING_DATASOURCE_USERNAME: admin
       SPRING_DATASOURCE_PASSWORD: ${ADMIN_DB_PASSWORD}
+      # Sign-in: tokens of the "Traveler admin" application in authentik. The issuer is
+      # the public address; the signing keys are read from authentik directly.
+      TRAVELER_SECURITY_ISSUER: ${AUTHENTIK_PUBLIC_URL:?Set AUTHENTIK_PUBLIC_URL in .env}/application/o/traveler-admin/
+      TRAVELER_SECURITY_JWK_SET_URI: http://authentik-server:9000/application/o/traveler-admin/jwks/
+      # Signs the QR codes of the attractions.
+      TRAVELER_QR_PRIVATE_KEY: ${TRAVELER_QR_PRIVATE_KEY:?Set TRAVELER_QR_PRIVATE_KEY in .env}
+      # Attraction photos.
+      TRAVELER_S3_ENDPOINT: http://object-storage:9000
+      TRAVELER_S3_BUCKET: ${OBJECT_STORAGE_BUCKET:-traveler}
+      TRAVELER_S3_ACCESS_KEY: ${OBJECT_STORAGE_ACCESS_KEY:?Set OBJECT_STORAGE_ACCESS_KEY in .env}
+      TRAVELER_S3_SECRET_KEY: ${OBJECT_STORAGE_SECRET_KEY:?Set OBJECT_STORAGE_SECRET_KEY in .env}
     depends_on:
       admin-db:
         condition: service_healthy
-    networks: [admin-edge, admin-data, backends]
+    networks: [admin-edge, admin-data, backends, authentik-edge]
     healthcheck:
       test:
         - CMD
@@ -142,8 +153,19 @@ services:
     networks: [tourist-edge]
     restart: unless-stopped
 
+  # Serves the admin web app and forwards the admin API (admin-web/Dockerfile). The
+  # sign-in settings are baked into the app when it is built.
   admin-gateway:
-    image: nginx:1.28-alpine
+    build:
+      context: ../..
+      dockerfile: admin-web/Dockerfile
+      args:
+        VITE_OIDC_AUTHORITY: ${AUTHENTIK_PUBLIC_URL:?Set AUTHENTIK_PUBLIC_URL in .env}/application/o/traveler-admin/
+        VITE_OIDC_CLIENT_ID: traveler-admin
+        VITE_OIDC_REDIRECT_URI: ${ADMIN_WEB_URL:?Set ADMIN_WEB_URL in .env}/auth/callback
+        VITE_OIDC_POST_LOGOUT_REDIRECT_URI: ${ADMIN_WEB_URL:?Set ADMIN_WEB_URL in .env}/login
+        VITE_OIDC_SCOPE: openid profile email
+    image: traveler/admin-gateway:${IMAGE_TAG:-latest}
     environment:
       ADMIN_SERVER_NAME: ${ADMIN_SERVER_NAME:?Set ADMIN_SERVER_NAME in .env}
       ADMIN_RATE_LIMIT: ${ADMIN_RATE_LIMIT:-10r/s}
@@ -156,6 +178,29 @@ services:
       admin-backend:
         condition: service_healthy
     networks: [admin-edge]
+    restart: unless-stopped
+
+  # Object storage for attraction photos (S3 API): RustFS. Only the admin backend
+  # reaches it, and nothing is published. The admin backend creates the bucket.
+  object-storage:
+    image: rustfs/rustfs:1.0.6
+    environment:
+      RUSTFS_VOLUMES: /data
+      RUSTFS_ADDRESS: 0.0.0.0:9000
+      RUSTFS_CONSOLE_ENABLE: "false"
+      RUSTFS_ACCESS_KEY: ${OBJECT_STORAGE_ACCESS_KEY:?Set OBJECT_STORAGE_ACCESS_KEY in .env}
+      RUSTFS_SECRET_KEY: ${OBJECT_STORAGE_SECRET_KEY:?Set OBJECT_STORAGE_SECRET_KEY in .env}
+    volumes:
+      - object-storage-data:/data
+    networks: [admin-data]
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:9000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     restart: unless-stopped
 
   # authentik, the identity provider of both applications (OIDC), after the
@@ -235,6 +280,7 @@ networks:
     internal: true
 
 volumes:
+  object-storage-data:
   tourist-db-data:
   admin-db-data:
   authentik-db-data:

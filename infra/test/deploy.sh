@@ -28,7 +28,8 @@ export IMAGE_TAG="$tag"
 compose() { docker compose --env-file "$ENV_FILE" "$@"; }
 
 if docker image inspect "traveler/tourist-backend:$tag" >/dev/null 2>&1 \
-  && docker image inspect "traveler/admin-backend:$tag" >/dev/null 2>&1; then
+  && docker image inspect "traveler/admin-backend:$tag" >/dev/null 2>&1 \
+  && docker image inspect "traveler/admin-gateway:$tag" >/dev/null 2>&1; then
   echo "Images for $tag are already on this host: starting them without a build."
   build_flag="--no-build"
 else

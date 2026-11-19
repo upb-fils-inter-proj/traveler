@@ -185,6 +185,24 @@ docker compose --env-file /opt/traveler/.env exec authentik-worker \
   ak apply_blueprint custom/traveler.yaml
 ```
 
+## Admin web app, photos and QR codes
+
+The admin gateway image contains the admin web app (`admin-web/Dockerfile`), so
+the app and the admin API share one address. Its sign-in settings come from
+`AUTHENTIK_PUBLIC_URL` and `ADMIN_WEB_URL` when the image is built.
+
+Add to `/opt/traveler/.env` (see `.env.example` for how to generate each value):
+
+- `AUTHENTIK_PUBLIC_URL`, for example `https://traveller-auth.lucasain.dev`.
+- `TRAVELER_QR_PRIVATE_KEY`, the Ed25519 key that signs the attractions' QR codes.
+  Keep it: a new key makes every printed code invalid.
+- `OBJECT_STORAGE_ACCESS_KEY` and `OBJECT_STORAGE_SECRET_KEY` for RustFS. The
+  admin backend creates the bucket (`OBJECT_STORAGE_BUCKET`, default `traveler`).
+
+Only staff listed in the admin database can use the admin web app. Until staff
+accounts can be managed in the app, add them with SQL (see
+[`admin-backend/README.md`](../../admin-backend/README.md)).
+
 ## Check a deployment
 
 ```bash
