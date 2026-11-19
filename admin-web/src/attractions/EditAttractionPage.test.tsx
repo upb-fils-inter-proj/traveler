@@ -157,7 +157,7 @@ describe('EditAttractionPage', () => {
     })
     renderAttraction()
     await opened()
-    expect(screen.getByText('There is no photo yet.')).toBeInTheDocument()
+    expect(await screen.findByText('There is no photo yet.')).toBeInTheDocument()
 
     const photo = new File(['jpeg bytes'], 'peles.jpg', { type: 'image/jpeg' })
     await user.upload(screen.getByLabelText('Upload a photo'), photo)
