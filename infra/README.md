@@ -22,9 +22,10 @@ docker compose ps
 | `tourist-db`, `admin-db` | Two separate PostgreSQL 16 + PostGIS servers, one per backend |
 | `redis` | Cache of the tourist backend |
 | `tourist-backend`, `admin-backend` | The two backends, built from this repository |
-| `tourist-gateway`, `admin-gateway` | One public Nginx gateway per backend: HTTPS, rate limiting, load balancing |
+| `tourist-gateway`, `admin-gateway` | One public Nginx gateway per backend: HTTPS, rate limiting, load balancing. The admin gateway also serves the admin web app |
 | `authentik-server`, `authentik-worker` | authentik 2026.8.5, the identity provider (OIDC) of both applications |
 | `authentik-db` | authentik's own PostgreSQL 16 server |
+| `object-storage` | RustFS 1.0.6 (S3 API) for attraction photos, reachable only from the admin backend |
 
 The data networks and the network between the backends are internal: the
 databases and Redis can only be reached from their own backend (authentik's

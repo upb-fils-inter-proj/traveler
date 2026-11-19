@@ -22,6 +22,9 @@ server {
 
     add_header Strict-Transport-Security "max-age=31536000" always;
 
+    # Attraction photos are up to 5 MB.
+    client_max_body_size 6m;
+
     # The internal API and the actuator endpoints are never public.
     location ^~ /internal/ {
         return 404;
@@ -30,7 +33,23 @@ server {
         return 404;
     }
 
+    # The admin web app (built into this image). Unknown paths return the app, which
+    # handles its own routes.
     location / {
+        root /usr/share/nginx/html;
+        try_files $uri $uri/ /index.html;
+        add_header Cache-Control "no-cache" always;
+        add_header Strict-Transport-Security "max-age=31536000" always;
+    }
+    # Built files have a content hash in their name, so they never change.
+    location ^~ /assets/ {
+        root /usr/share/nginx/html;
+        add_header Cache-Control "public, max-age=31536000, immutable" always;
+        add_header Strict-Transport-Security "max-age=31536000" always;
+    }
+
+    # The admin API and its OpenAPI description go to the admin backend.
+    location ~ ^/(admin/|v3/api-docs|swagger-ui) {
         limit_req zone=admin_api burst=20 nodelay;
         limit_req_status 429;
 
