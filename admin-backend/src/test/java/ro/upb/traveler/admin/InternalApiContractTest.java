@@ -8,7 +8,10 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
+import ro.upb.traveler.admin.security.SecurityConfig;
+import ro.upb.traveler.admin.testsupport.AdminTestBeans;
 
 /**
  * Provider side of the contract between the backends: every answer of the internal API must be
@@ -16,6 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
  */
 @Tag("contract")
 @WebMvcTest(InternalApiController.class)
+@Import({SecurityConfig.class, AdminTestBeans.class})
 class InternalApiContractTest {
 
   @Autowired private MockMvc mvc;

@@ -35,12 +35,20 @@
     <log4j2.version>2.25.5</log4j2.version>
     <openapi-generator.version>7.27.0</openapi-generator.version>
     <swagger-request-validator.version>3.0.0</swagger-request-validator.version>
+    <aws-sdk.version>2.59.4</aws-sdk.version>
     <!-- The contract between the two backends, shared by both modules. -->
     <internal-api.spec>${project.basedir}/../api/internal-api.yaml</internal-api.spec>
   </properties>
 
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>software.amazon.awssdk</groupId>
+        <artifactId>bom</artifactId>
+        <version>${aws-sdk.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
       <!-- Pulled in by Testcontainers (tests only). The version it asks for has known vulnerabilities. -->
       <dependency>
         <groupId>org.apache.commons</groupId>
@@ -68,6 +76,29 @@
       <artifactId>spring-boot-starter-jdbc</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+    </dependency>
+    <!-- Photos in S3-compatible object storage, through the JDK HTTP client only. -->
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>s3</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>software.amazon.awssdk</groupId>
+          <artifactId>netty-nio-client</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>software.amazon.awssdk</groupId>
+          <artifactId>apache-client</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>url-connection-client</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.flywaydb</groupId>
       <artifactId>flyway-core</artifactId>
     </dependency>
@@ -89,6 +120,11 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-test</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
