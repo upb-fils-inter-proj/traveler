@@ -164,7 +164,7 @@ services:
   # outposts are not used), so it does not need to run as root; named volumes
   # instead of folders next to this file; only the HTTP port is published.
   authentik-db:
-    image: postgres:16.16-alpine
+    image: postgres:18.7-alpine
     environment:
       POSTGRES_DB: authentik
       POSTGRES_USER: authentik
